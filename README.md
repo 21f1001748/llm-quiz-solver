@@ -321,3 +321,7 @@ For issues and questions:
 - Open a GitHub issue
 - Check existing issues for solutions
 - Review logs for error messages
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
