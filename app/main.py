@@ -1,13 +1,22 @@
 # app/main.py
 import os
+import sys
 import time
 import asyncio
+from pathlib import Path
 from pydantic import BaseModel, HttpUrl
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from .runner import solve_task
 
-QUIZ_SECRET = os.environ.get('QUIZ_SECRET')
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+try:
+    from app.runner import solve_task
+except ImportError:
+    from runner import solve_task
+
+QUIZ_SECRET = os.environ.get('QUIZ_SECRET', 'dev-secret')
 
 app = FastAPI(title='LLM Analysis Quiz Solver')
 app.add_middleware(
@@ -21,6 +30,20 @@ class TaskRequest(BaseModel):
     email: str
     secret: str
     url: HttpUrl
+
+@app.get('/')
+async def root():
+    """Root endpoint - API information"""
+    return {
+        'service': 'LLM Quiz Solver',
+        'status': 'running',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/health',
+            'task': 'POST /task',
+            'docs': '/docs'
+        }
+    }
 
 @app.post('/task')
 async def receive_task(req: TaskRequest, background_tasks: BackgroundTasks):
